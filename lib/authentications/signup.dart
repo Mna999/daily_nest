@@ -1,22 +1,24 @@
 import 'package:daily_nest/Alert.dart';
 import 'package:daily_nest/authentications/MyTextField.dart';
 import 'package:daily_nest/authentications/auth.dart';
-import 'package:daily_nest/authentications/signup.dart';
+import 'package:daily_nest/authentications/login.dart';
 import 'package:daily_nest/homepage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class Signup extends StatefulWidget {
+  const Signup({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<Signup> createState() => _SignupState();
 }
 
-class _LoginState extends State<Login> {
+class _SignupState extends State<Signup> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
+  TextEditingController confirmPassword = TextEditingController();
   var user;
   bool isLoading = false;
   final auth = Auth();
@@ -49,7 +51,7 @@ class _LoginState extends State<Login> {
                       SizedBox(
                         width: size.width * 0.9,
                         child: Text(
-                          "LogIn",
+                          "SignUp",
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 30,
@@ -99,33 +101,20 @@ class _LoginState extends State<Login> {
                       SizedBox(
                         height: 20,
                       ),
-                      InkWell(
-                        onTap: () {
-                          if (email.text.trim().isEmpty) {
-                            showDialog(
-                                context: context,
-                                builder: (context) =>
-                                    Alert(Message: "Please enter your email."));
-                          } else {
-                            auth.sendPasswordResetEmail(email.text.trim());
-                            showDialog(
-                                context: context,
-                                builder: (context) => Alert(
-                                    Message:
-                                        "An email was sent to reset your password."));
-                          }
-                        },
-                        child: SizedBox(
-                          width: size.width * 0.9,
-                          child: Container(
-                            alignment: Alignment.bottomRight,
-                            child: Text(
-                              "Forgot Password?",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
+                      SizedBox(
+                        width: size.width * 0.8,
+                        child: Text(
+                          "Confirm Password",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
+                      SizedBox(
+                          width: size.width * 0.8,
+                          child: MyTextField(
+                              isPassword: true, controller: confirmPassword)),
                       SizedBox(
                         height: 30,
                       ),
@@ -135,18 +124,28 @@ class _LoginState extends State<Login> {
                           child: ElevatedButton(
                             onPressed: () async {
                               if (email.text.trim().isEmpty ||
-                                  password.text.trim().isEmpty) {
+                                  password.text.trim().isEmpty ||
+                                  confirmPassword.text.trim().isEmpty) {
                                 showDialog(
                                     context: context,
                                     builder: (context) => Alert(
                                         Message:
                                             "Please enter both email and password"));
                                 return;
+                              } else if (password.text.trim() !=
+                                  confirmPassword.text.trim()) {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) => Alert(
+                                        Message:
+                                            "Both password must be the same"));
+                                return;
                               }
 
                               try {
                                 setState(() => isLoading = true);
-                                user = await auth.signInWithEmailAndPassword(
+                                user =
+                                    await auth.createUserWithEmailAndPassword(
                                   email.text.trim(),
                                   password.text.trim(),
                                 );
@@ -161,6 +160,11 @@ class _LoginState extends State<Login> {
                                         builder: (context) => Alert(
                                             Message:
                                                 "Verification email sent. Please check your inbox."));
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Login()),
+                                    );
                                   } else {
                                     Navigator.pushReplacement(
                                       context,
@@ -176,15 +180,18 @@ class _LoginState extends State<Login> {
                                     builder: (context) => Alert(
                                         Message: auth.handleAuthException(e)));
                               } catch (e) {
-                                setState(() => isLoading = false);
-                                showDialog(
-                                    context: context,
-                                    builder: (context) => Alert(
-                                        Message:
-                                            "An unexpected error occurred. Please try again."));
+                                if (mounted) {
+                                  setState(() => isLoading = false);
+
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) => Alert(
+                                          Message:
+                                              "An unexpected error occurred. Please try again."));
+                                }
                               }
                             },
-                            child: Text("Login"),
+                            child: Text("Sign Up"),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.orange,
                               foregroundColor: Colors.white,
@@ -197,7 +204,7 @@ class _LoginState extends State<Login> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Don't Have An Account?",
+                            "Alread Have An Acoount?",
                             style: TextStyle(color: Colors.white),
                           ),
                           SizedBox(
@@ -208,11 +215,11 @@ class _LoginState extends State<Login> {
                               Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => Signup(),
+                                    builder: (context) => Login(),
                                   ));
                             },
                             child: Text(
-                              "Resgister",
+                              "LogIn",
                               style: TextStyle(
                                   color: Colors.orange,
                                   fontWeight: FontWeight.bold),
