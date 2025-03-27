@@ -181,7 +181,7 @@ class _LoginState extends State<Login> {
                                     context: context,
                                     builder: (context) => Alert(
                                         Message:
-                                            "An unexpected error occurred. Please try again."));
+                                            "Email or Password is incorrect."));
                               }
                             },
                             child: Text("Login"),
