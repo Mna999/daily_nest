@@ -1,0 +1,54 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "com.example.daily_nest"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17  // Updated from VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_17  // Updated from VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'  // Updated from JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        applicationId = "com.example.daily_nest"
+        minSdk = 23
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+        multiDexEnabled = true  // Add this if using multidex
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.debug
+            // Add these for release builds
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+
+    // Add this if you encounter dexing issues
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+// Add this at the very end
+apply plugin: 'com.google.gms.google-services'

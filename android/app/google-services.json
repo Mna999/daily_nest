@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "225280984219",
+    "project_id": "dailynest-fb083",
+    "storage_bucket": "dailynest-fb083.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:225280984219:android:ff5e72fd435f346c41f23e",
+        "android_client_info": {
+          "package_name": "com.example.daily_nest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCB6jJIHU_RXsKAFJugFaUJrrWTk5ZgaHA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
