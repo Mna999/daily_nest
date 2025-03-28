@@ -17,9 +17,9 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
-  var user;
   bool isLoading = false;
   final auth = Auth();
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -35,17 +35,13 @@ class _LoginState extends State<Login> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        height: 40,
-                      ),
+                      SizedBox(height: 40),
                       Image.asset(
                         "assets/images/icons8-login-50.png",
                         width: size.width * 0.5,
                         height: size.height * 0.2,
                       ),
-                      SizedBox(
-                        height: 30,
-                      ),
+                      SizedBox(height: 30),
                       SizedBox(
                         width: size.width * 0.9,
                         child: Text(
@@ -56,9 +52,7 @@ class _LoginState extends State<Login> {
                               fontWeight: FontWeight.bold),
                         ),
                       ),
-                      SizedBox(
-                        height: 30,
-                      ),
+                      SizedBox(height: 30),
                       SizedBox(
                         width: size.width * 0.8,
                         child: Text(
@@ -69,16 +63,14 @@ class _LoginState extends State<Login> {
                               fontWeight: FontWeight.bold),
                         ),
                       ),
-                      SizedBox(
-                        height: 10,
-                      ),
+                      SizedBox(height: 10),
                       SizedBox(
                           width: size.width * 0.8,
                           child: MyTextField(
-                              isPassword: false, controller: email)),
-                      SizedBox(
-                        height: 20,
-                      ),
+                              message: "Enter you email",
+                              isPassword: false,
+                              controller: email)),
+                      SizedBox(height: 20),
                       SizedBox(
                         width: size.width * 0.8,
                         child: Text(
@@ -89,16 +81,14 @@ class _LoginState extends State<Login> {
                               fontWeight: FontWeight.bold),
                         ),
                       ),
-                      SizedBox(
-                        height: 10,
-                      ),
+                      SizedBox(height: 10),
                       SizedBox(
                           width: size.width * 0.8,
                           child: MyTextField(
-                              isPassword: true, controller: password)),
-                      SizedBox(
-                        height: 20,
-                      ),
+                              message: "Enter your password",
+                              isPassword: true,
+                              controller: password)),
+                      SizedBox(height: 20),
                       InkWell(
                         onTap: () {
                           if (email.text.trim().isEmpty) {
@@ -126,9 +116,7 @@ class _LoginState extends State<Login> {
                           ),
                         ),
                       ),
-                      SizedBox(
-                        height: 30,
-                      ),
+                      SizedBox(height: 30),
                       SizedBox(
                           width: size.width * 0.5,
                           height: size.height * 0.07,
@@ -146,42 +134,45 @@ class _LoginState extends State<Login> {
 
                               try {
                                 setState(() => isLoading = true);
-                                user = await auth.signInWithEmailAndPassword(
+                                final user =
+                                    await auth.signInWithEmailAndPassword(
                                   email.text.trim(),
                                   password.text.trim(),
                                 );
 
-                                setState(() => isLoading = false);
-
                                 if (user != null) {
-                                  if (!auth.isEmailVerified) {
-                                    await auth.sendEmailVerification();
+                                  if (!user.emailVerified) {
+                                    await user.sendEmailVerification();
                                     showDialog(
                                         context: context,
                                         builder: (context) => Alert(
                                             Message:
                                                 "Verification email sent. Please check your inbox."));
                                   } else {
-                                    Navigator.pushReplacement(
+                                    Navigator.pushAndRemoveUntil(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => Homepage()),
+                                        builder: (context) => Homepage(),
+                                      ),
+                                      (route) => false,
                                     );
                                   }
                                 }
                               } on FirebaseAuthException catch (e) {
-                                setState(() => isLoading = false);
                                 showDialog(
                                     context: context,
                                     builder: (context) => Alert(
                                         Message: auth.handleAuthException(e)));
                               } catch (e) {
-                                setState(() => isLoading = false);
                                 showDialog(
                                     context: context,
                                     builder: (context) => Alert(
                                         Message:
-                                            "Email or Password is incorrect."));
+                                            "An error occurred. Please try again."));
+                              } finally {
+                                if (mounted) {
+                                  setState(() => isLoading = false);
+                                }
                               }
                             },
                             child: Text("Login"),
@@ -190,9 +181,7 @@ class _LoginState extends State<Login> {
                               foregroundColor: Colors.white,
                             ),
                           )),
-                      SizedBox(
-                        height: 20,
-                      ),
+                      SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -200,9 +189,7 @@ class _LoginState extends State<Login> {
                             "Don't Have An Account?",
                             style: TextStyle(color: Colors.white),
                           ),
-                          SizedBox(
-                            width: 7,
-                          ),
+                          SizedBox(width: 7),
                           InkWell(
                             onTap: () {
                               Navigator.pushReplacement(
@@ -212,7 +199,7 @@ class _LoginState extends State<Login> {
                                   ));
                             },
                             child: Text(
-                              "Resgister",
+                              "Register",
                               style: TextStyle(
                                   color: Colors.orange,
                                   fontWeight: FontWeight.bold),
@@ -220,9 +207,7 @@ class _LoginState extends State<Login> {
                           )
                         ],
                       ),
-                      SizedBox(
-                        height: 20,
-                      ),
+                      SizedBox(height: 20),
                       Text(
                         "Or LogIn with",
                         style: TextStyle(color: Colors.white),
@@ -230,16 +215,29 @@ class _LoginState extends State<Login> {
                       Center(
                           child: IconButton(
                               onPressed: () async {
-                                isLoading = true;
-                                setState(() {});
-                                user = await auth.signInWithGoogle();
-                                isLoading = false;
-                                setState(() {});
-                                Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Homepage(),
-                                    ));
+                                try {
+                                  setState(() => isLoading = true);
+                                  final user = await auth.signInWithGoogle();
+                                  if (user != null) {
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Homepage(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  }
+                                } catch (e) {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) => Alert(
+                                          Message:
+                                              "Google sign-in failed. Please try again."));
+                                } finally {
+                                  if (mounted) {
+                                    setState(() => isLoading = false);
+                                  }
+                                }
                               },
                               icon: FaIcon(
                                 FontAwesomeIcons.google,

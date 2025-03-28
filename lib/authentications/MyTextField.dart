@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 class MyTextField extends StatefulWidget {
   final bool isPassword;
   final TextEditingController controller;
+  final String message;
   const MyTextField(
-      {super.key, required this.isPassword, required this.controller});
+      {super.key,
+      required this.isPassword,
+      required this.controller,
+      required this.message});
 
   @override
   State<MyTextField> createState() => _MyTextFieldState();
@@ -31,13 +35,8 @@ class _MyTextFieldState extends State<MyTextField> {
           focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(100),
               borderSide: BorderSide(color: Colors.orange, width: 2)),
-          label: Text(
-              widget.isPassword ? "Enter Your Password" : "Enter Your Email"),
+          label: Text(widget.message),
           labelStyle: TextStyle(color: Colors.orange),
-          prefixIcon: Icon(
-            widget.isPassword ? Icons.password : Icons.email,
-            color: Colors.orange,
-          ),
           suffixIcon: widget.isPassword
               ? IconButton(
                   icon: Icon(

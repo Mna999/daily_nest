@@ -77,7 +77,9 @@ class _SignupState extends State<Signup> {
                       SizedBox(
                           width: size.width * 0.8,
                           child: MyTextField(
-                              isPassword: false, controller: email)),
+                              message: "Enter you email",
+                              isPassword: false,
+                              controller: email)),
                       SizedBox(
                         height: 20,
                       ),
@@ -97,7 +99,9 @@ class _SignupState extends State<Signup> {
                       SizedBox(
                           width: size.width * 0.8,
                           child: MyTextField(
-                              isPassword: true, controller: password)),
+                              message: "Enter your password",
+                              isPassword: true,
+                              controller: password)),
                       SizedBox(
                         height: 20,
                       ),
@@ -114,7 +118,9 @@ class _SignupState extends State<Signup> {
                       SizedBox(
                           width: size.width * 0.8,
                           child: MyTextField(
-                              isPassword: true, controller: confirmPassword)),
+                              message: "Confirm you password",
+                              isPassword: true,
+                              controller: confirmPassword)),
                       SizedBox(
                         height: 30,
                       ),
