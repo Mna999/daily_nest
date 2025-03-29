@@ -7,6 +7,7 @@ import 'package:daily_nest/habit/add.dart';
 import 'package:daily_nest/habit/collection.dart';
 import 'package:daily_nest/habit/recordhabit.dart';
 import 'package:daily_nest/habitcard.dart';
+import 'package:daily_nest/states.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -21,6 +22,7 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   StreamSubscription<User?>? _authSubscription;
   int _currentIndex = 0;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -40,6 +42,9 @@ class _HomepageState extends State<Homepage> {
   @override
   void dispose() {
     _authSubscription?.cancel();
+    _pageController.dispose();
+
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -166,7 +171,15 @@ class _HomepageState extends State<Homepage> {
         ),
         backgroundColor: Colors.black,
       ),
-      body: _currentIndex == 0 ? _buildHomeContent() : const Favoritepage(),
+      body: PageView(
+          controller: _pageController,
+          children: [_buildHomeContent(), Favoritepage(), Statespage()],
+          onPageChanged: (value) {
+            setState(() {
+              _currentIndex = value;
+            });
+          },
+          physics: ClampingScrollPhysics()),
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton(
               shape: const CircleBorder(),
@@ -187,6 +200,11 @@ class _HomepageState extends State<Homepage> {
           setState(() {
             _currentIndex = index;
           });
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeInOut,
+          );
         },
         backgroundColor: Colors.black,
         selectedItemColor: Colors.orange,
@@ -200,6 +218,10 @@ class _HomepageState extends State<Homepage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
             label: 'Favorites',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart),
+            label: 'States',
           ),
         ],
       ),
