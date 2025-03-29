@@ -17,12 +17,13 @@ class HabitCard extends StatefulWidget {
 }
 
 class _HabitCardState extends State<HabitCard> {
-  late bool _isFav=false;
-  late int _streak=0;
+  late bool _isFav = false;
+  late int _streak = 0;
   late String _name = '';
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('habits')
@@ -30,9 +31,9 @@ class _HabitCardState extends State<HabitCard> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          _isFav = snapshot.data!['isFav'];
-          _streak = snapshot.data!['streak'];
-          _name = snapshot.data!['name'];
+          _isFav = snapshot.data!['isFav'] ?? false;
+          _streak = snapshot.data!['streak'] ?? 0;
+          _name = snapshot.data!['name'] ?? '';
         }
 
         return Card(
@@ -48,11 +49,15 @@ class _HabitCardState extends State<HabitCard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      _name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    SizedBox(
+                      width: size.width * 0.2,
+                      height: size.height * 0.06,
+                      child: Text(
+                        _name,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     IconButton(
@@ -113,8 +118,6 @@ class _HabitCardState extends State<HabitCard> {
           .collection('habits')
           .doc(widget.habitId)
           .update({'isFav': _isFav});
-
-      await Collections.updateHabitStreak(widget.habitId, 0);
     } catch (e) {
       setState(() {
         _isFav = !_isFav;

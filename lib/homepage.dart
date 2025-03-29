@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:daily_nest/authentications/auth.dart';
 import 'package:daily_nest/authentications/login.dart';
+import 'package:daily_nest/favorites.dart';
 import 'package:daily_nest/habit/add.dart';
 import 'package:daily_nest/habit/collection.dart';
 import 'package:daily_nest/habit/recordhabit.dart';
@@ -19,6 +20,7 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   StreamSubscription<User?>? _authSubscription;
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -62,32 +64,76 @@ class _HomepageState extends State<Homepage> {
 
   Future<void> _checkAndResetStreaks(List<QueryDocumentSnapshot> habits) async {
     final today = DateTime.now();
-    final diffrence = today.subtract(Duration(days: 2));
+    final difference = today.subtract(const Duration(days: 2));
 
     for (final habit in habits) {
-      final lastPressedDate =
-          DateFormat("dd-MM-yyy").parse(habit['lastpressed']);
-      if (lastPressedDate.isBefore(diffrence)) {
-        await habit.reference.update({'streak': 0});
+      try {
+        final lastPressedDate =
+            DateFormat("dd-MM-yyyy").parse(habit['lastpressed']);
+        if (lastPressedDate.isBefore(difference)) {
+          await habit.reference.update({'streak': 0});
+        }
+      } catch (e) {
+        debugPrint('Error resetting streak: $e');
       }
     }
+  }
+
+  Widget _buildHomeContent() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('habits')
+          .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+              child: CircularProgressIndicator(color: Colors.orange));
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text(
+              "Press the + icon to add habits",
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          );
+        }
+
+        if (snapshot.hasData) {
+          _checkAndResetStreaks(snapshot.data!.docs);
+        }
+
+        return GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+          ),
+          itemCount: snapshot.data!.docs.length,
+          itemBuilder: (context, index) => InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      Recordhabit(habitId: snapshot.data!.docs[index].id),
+                ),
+              );
+            },
+            child: HabitCard(habitId: snapshot.data!.docs[index].id),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddHabit()),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
       appBar: AppBar(
         centerTitle: true,
         title: Row(
@@ -120,53 +166,42 @@ class _HomepageState extends State<Homepage> {
         ),
         backgroundColor: Colors.black,
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('habits')
-            .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child: CircularProgressIndicator(color: Colors.orange));
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text(
-                "Press the + icon to add habits",
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            );
-          }
-
-          if (snapshot.hasData) {
-            _checkAndResetStreaks(snapshot.data!.docs);
-          }
-
-          return GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-            ),
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) => InkWell(
-              onTap: () {
+      body: _currentIndex == 0 ? _buildHomeContent() : const Favoritepage(),
+      floatingActionButton: _currentIndex == 0
+          ? FloatingActionButton(
+              shape: const CircleBorder(),
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              onPressed: () {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          Recordhabit(habitId: snapshot.data!.docs[index].id),
-                    ));
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddHabit()),
+                );
               },
-              child: HabitCard(habitId: snapshot.data!.docs[index].id),
-            ),
-          );
+              child: const Icon(Icons.add),
+            )
+          : null,
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
         },
+        backgroundColor: Colors.black,
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+        ],
       ),
     );
   }
