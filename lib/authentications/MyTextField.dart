@@ -19,8 +19,7 @@ class _MyTextFieldState extends State<MyTextField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-        style: TextStyle(color: Colors.orange),
-        cursorColor: Colors.orange,
+        cursorColor: Colors.black,
         controller: widget.controller,
         obscureText: widget.isPassword && !isVisable,
         decoration: InputDecoration(
@@ -35,8 +34,8 @@ class _MyTextFieldState extends State<MyTextField> {
           focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(100),
               borderSide: BorderSide(color: Colors.orange, width: 2)),
-          label: Text(widget.message),
-          labelStyle: TextStyle(color: Colors.orange),
+          hintText: widget.message,
+          hintStyle: TextStyle(color: Colors.grey),
           suffixIcon: widget.isPassword
               ? IconButton(
                   icon: Icon(

@@ -5,6 +5,7 @@ import 'package:daily_nest/authentications/auth.dart';
 import 'package:daily_nest/authentications/login.dart';
 import 'package:daily_nest/habit/add.dart';
 import 'package:daily_nest/habit/collection.dart';
+import 'package:daily_nest/habit/recordhabit.dart';
 import 'package:daily_nest/habitcard.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,8 @@ class _HomepageState extends State<Homepage> {
   void initState() {
     super.initState();
     getData();
-    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    _authSubscription =
+        FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null && mounted) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -107,11 +109,13 @@ class _HomepageState extends State<Homepage> {
             SizedBox(width: 3),
             Text(
               "Daily",
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             Text(
               "Nest",
-              style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
             )
           ],
         ),
@@ -128,7 +132,8 @@ class _HomepageState extends State<Homepage> {
           ? Center(
               child: Text(
                 "Press the + icon to add habits",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             )
           : isLoading
@@ -141,8 +146,21 @@ class _HomepageState extends State<Homepage> {
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2),
                   itemCount: data.length,
-                  itemBuilder: (context, index) => HabitCard(
-                    habitData: data[index],
+                  itemBuilder: (context, index) => InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              Recordhabit(habitId: data[index].id),
+                        ),
+                      ).then((_) {
+                        if (mounted) getData();
+                      });
+                    },
+                    child: HabitCard(
+                      habitData: data[index],
+                    ),
                   ),
                 ),
     );

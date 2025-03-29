@@ -38,9 +38,10 @@ class Collections {
   }
 
   static Future<void> updateHabitStreak(String docId, int newStreak) async {
+    final formatter = DateFormat('dd-MM-yyyy');
     await habits.doc(docId).update({
       "streak": newStreak,
-      "lastpressed": DateTime.now(),
+      "lastpressed": formatter.format(DateTime.now()),
     });
   }
 

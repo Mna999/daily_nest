@@ -37,6 +37,9 @@ class _HabitCardState extends State<HabitCard> {
           .collection('habits')
           .doc(widget.habitData.id)
           .update({'isFav': _isFav});
+
+          await Collections.updateHabitStreak(widget.habitData.id, 0);
+
     } catch (e) {
       setState(() {
         _isFav = !_isFav;
