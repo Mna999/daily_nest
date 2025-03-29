@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:daily_nest/authentications/auth.dart';
 import 'package:daily_nest/authentications/login.dart';
@@ -9,6 +8,7 @@ import 'package:daily_nest/habit/recordhabit.dart';
 import 'package:daily_nest/habitcard.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -18,20 +18,17 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  bool isLoading = false;
-  List<QueryDocumentSnapshot> data = [];
   StreamSubscription<User?>? _authSubscription;
 
   @override
   void initState() {
     super.initState();
-    getData();
     _authSubscription =
         FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null && mounted) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => Login()),
+          MaterialPageRoute(builder: (context) => const Login()),
           (route) => false,
         );
       }
@@ -44,30 +41,13 @@ class _HomepageState extends State<Homepage> {
     super.dispose();
   }
 
-  getData() async {
-    print("Fetching data...");
-    setState(() {
-      isLoading = true;
-    });
-
-    final habits = await Collections.getHabits();
-
-    if (mounted) {
-      setState(() {
-        data = habits;
-        isLoading = false;
-      });
-    }
-    print("Data fetched: ${data.length} items");
-  }
-
   Future<void> _signOut() async {
     try {
       await Auth().signOut();
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => Login()),
+          MaterialPageRoute(builder: (context) => const Login()),
           (route) => false,
         );
       }
@@ -80,21 +60,33 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
+  Future<void> _checkAndResetStreaks(List<QueryDocumentSnapshot> habits) async {
+    final today = DateTime.now();
+    final diffrence = today.subtract(Duration(days: 2));
+
+    for (final habit in habits) {
+      final lastPressedDate =
+          DateFormat("dd-MM-yyy").parse(habit['lastpressed']);
+      if (lastPressedDate.isBefore(diffrence)) {
+        await habit.reference.update({'streak': 0});
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        shape: CircleBorder(),
+        shape: const CircleBorder(),
         backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
         onPressed: () {
           Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AddHabit(),
-              )).then((_) => getData());
+            context,
+            MaterialPageRoute(builder: (context) => const AddHabit()),
+          );
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       appBar: AppBar(
         centerTitle: true,
@@ -106,13 +98,13 @@ class _HomepageState extends State<Homepage> {
               "assets/images/icons8-easter-eggs-100.png",
               scale: 3,
             ),
-            SizedBox(width: 3),
-            Text(
+            const SizedBox(width: 3),
+            const Text(
               "Daily",
               style:
                   TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
-            Text(
+            const Text(
               "Nest",
               style:
                   TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
@@ -121,48 +113,61 @@ class _HomepageState extends State<Homepage> {
         ),
         leading: IconButton(
           onPressed: _signOut,
-          icon: Icon(
+          icon: const Icon(
             Icons.exit_to_app,
             color: Colors.orange,
           ),
         ),
         backgroundColor: Colors.black,
       ),
-      body: data.isEmpty
-          ? Center(
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('habits')
+            .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+                child: CircularProgressIndicator(color: Colors.orange));
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(
               child: Text(
                 "Press the + icon to add habits",
                 style:
                     TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
-            )
-          : isLoading
-              ? Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.orange,
-                  ),
-                )
-              : GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2),
-                  itemCount: data.length,
-                  itemBuilder: (context, index) => InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              Recordhabit(habitId: data[index].id),
-                        ),
-                      ).then((_) {
-                        if (mounted) getData();
-                      });
-                    },
-                    child: HabitCard(
-                      habitData: data[index],
-                    ),
-                  ),
-                ),
+            );
+          }
+
+          if (snapshot.hasData) {
+            _checkAndResetStreaks(snapshot.data!.docs);
+          }
+
+          return GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+            ),
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) => InkWell(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          Recordhabit(habitId: snapshot.data!.docs[index].id),
+                    ));
+              },
+              child: HabitCard(habitId: snapshot.data!.docs[index].id),
+            ),
+          );
+        },
+      ),
     );
   }
 }

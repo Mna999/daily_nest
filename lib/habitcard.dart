@@ -5,11 +5,11 @@ import 'package:daily_nest/homepage.dart';
 import 'package:flutter/material.dart';
 
 class HabitCard extends StatefulWidget {
-  final QueryDocumentSnapshot habitData;
+  final String habitId;
 
   const HabitCard({
     super.key,
-    required this.habitData,
+    required this.habitId,
   });
 
   @override
@@ -17,14 +17,90 @@ class HabitCard extends StatefulWidget {
 }
 
 class _HabitCardState extends State<HabitCard> {
-  late bool _isFav;
-  late int _streak;
+  late bool _isFav=false;
+  late int _streak=0;
+  late String _name = '';
 
   @override
-  void initState() {
-    super.initState();
-    _isFav = widget.habitData['isFav'];
-    _streak = widget.habitData['streak'];
+  Widget build(BuildContext context) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('habits')
+          .doc(widget.habitId)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          _isFav = snapshot.data!['isFav'];
+          _streak = snapshot.data!['streak'];
+          _name = snapshot.data!['name'];
+        }
+
+        return Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        _isFav ? Icons.favorite : Icons.favorite_border,
+                        color: _isFav ? Colors.red : Colors.grey,
+                      ),
+                      onPressed: _toggleFavorite,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Streak: $_streak days',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert),
+                      onSelected: _handleMenuAction,
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: "edit",
+                          child: Text("Edit Habit"),
+                        ),
+                        const PopupMenuItem(
+                          value: "delete",
+                          child: Text(
+                            "Delete Habit",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _toggleFavorite() async {
@@ -35,11 +111,10 @@ class _HabitCardState extends State<HabitCard> {
     try {
       await FirebaseFirestore.instance
           .collection('habits')
-          .doc(widget.habitData.id)
+          .doc(widget.habitId)
           .update({'isFav': _isFav});
 
-          await Collections.updateHabitStreak(widget.habitData.id, 0);
-
+      await Collections.updateHabitStreak(widget.habitId, 0);
     } catch (e) {
       setState(() {
         _isFav = !_isFav;
@@ -68,8 +143,8 @@ class _HabitCardState extends State<HabitCard> {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('Delete Habit'),
-            content: Text('Are you sure you want to delete this habit?'),
+            title: const Text('Delete Habit'),
+            content: const Text('Are you sure you want to delete this habit?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
@@ -77,7 +152,7 @@ class _HabitCardState extends State<HabitCard> {
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: Text(
+                child: const Text(
                   'Delete',
                   style: TextStyle(color: Colors.red),
                 ),
@@ -90,96 +165,40 @@ class _HabitCardState extends State<HabitCard> {
 
   Future<void> _deleteHabit() async {
     try {
-      await Collections.deleteHabit(widget.habitData.id);
-      Navigator.pushReplacement(
+      await Collections.deleteHabit(widget.habitId);
+      if (mounted) {
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => Homepage(),
-          ));
+            builder: (context) => const Homepage(),
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete habit: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete habit: $e')),
+        );
+      }
     }
   }
 
   Future<void> _editHabit() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditHabit(
-          docId: widget.habitData.id,
-          oldName: widget.habitData['name'],
-        ),
-      ),
-    );
-  }
+    final doc = await FirebaseFirestore.instance
+        .collection('habits')
+        .doc(widget.habitId)
+        .get();
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  widget.habitData['name'],
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    _isFav ? Icons.favorite : Icons.favorite_border,
-                    color: _isFav ? Colors.red : Colors.grey,
-                  ),
-                  onPressed: _toggleFavorite,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Streak: $_streak days',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert),
-                  onSelected: _handleMenuAction,
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: "edit",
-                      child: Text("Edit Habit"),
-                    ),
-                    const PopupMenuItem(
-                      value: "delete",
-                      child: Text(
-                        "Delete Habit",
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+    if (mounted) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EditHabit(
+            docId: widget.habitId,
+            oldName: doc['name'],
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 }

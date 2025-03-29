@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:daily_nest/Alert.dart';
+import 'package:daily_nest/habit/collection.dart';
 import 'package:daily_nest/habit/recordcard.dart';
+import 'package:daily_nest/homepage.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class Recordhabit extends StatelessWidget {
   final String habitId;
@@ -14,7 +18,11 @@ class Recordhabit extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Homepage(),
+              )),
           icon: const Icon(Icons.arrow_back, color: Colors.orange),
         ),
         centerTitle: true,
@@ -65,6 +73,39 @@ class Recordhabit extends StatelessWidget {
                   width: size.width * 0.9,
                   child: Recordcard(habitData: snapshot.data!),
                 ),
+                SizedBox(
+                  height: 30,
+                ),
+                SizedBox(
+                    width: size.width * 0.7,
+                    height: size.height * 0.07,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final formatter = DateFormat('dd-MM-yyyy');
+
+                        if (snapshot.data!['lastpressed'] ==
+                            formatter.format(DateTime.now())) {
+                          showDialog(
+                              context: context,
+                              builder: (context) => Alert(
+                                  Message:
+                                      "Habit has already been nested for the day"));
+                        } else {
+                          Collections.updateHabitStreak(
+                              snapshot.data!.id, snapshot.data!['streak'] + 1);
+                          showDialog(
+                              context: context,
+                              builder: (context) => Alert(
+                                  Message:
+                                      "Habit has been nested for the day successfully"));
+                        }
+                      },
+                      child: Text("Nest Habit"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                      ),
+                    )),
               ],
             ),
           );
