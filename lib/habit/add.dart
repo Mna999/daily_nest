@@ -1,5 +1,6 @@
 import 'package:daily_nest/Alert.dart';
 import 'package:daily_nest/authentications/MyTextField.dart';
+import 'package:daily_nest/habit/categortDropDown.dart';
 import 'package:daily_nest/habit/collection.dart';
 import 'package:daily_nest/homepage.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,12 @@ class AddHabit extends StatefulWidget {
 
 class _AddHabitState extends State<AddHabit> {
   TextEditingController name = TextEditingController();
+  String selectedValue = "Sports";
+  updateParent(String newValue) {
+    setState(() {
+      selectedValue = newValue;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +89,28 @@ class _AddHabitState extends State<AddHabit> {
                     message: "Enter the name of the habit"),
               ),
               SizedBox(
+                height: 20,
+              ),
+              SizedBox(
+                width: size.width * 0.8,
+                child: Text(
+                  "Category",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              SizedBox(
+                width: size.width * 0.8,
+                child: Categortdropdown(
+                    startingCategory: 'Sports',
+                    updateParent: (newValue) => updateParent(newValue!)),
+              ),
+              SizedBox(
                 height: 30,
               ),
               SizedBox(
@@ -96,7 +125,7 @@ class _AddHabitState extends State<AddHabit> {
                               Alert(Message: "Enter the name of the habit"),
                         );
                       } else {
-                        Collections.addHabit(name.text);
+                        Collections.addHabit(name.text, selectedValue);
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(

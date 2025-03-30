@@ -64,11 +64,6 @@ class _FavoritepageState extends State<Favoritepage> {
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please sign in to view favorites')),
-      );
-    }
 
     return Scaffold(
       body: StreamBuilder<QuerySnapshot>(
@@ -78,15 +73,6 @@ class _FavoritepageState extends State<Favoritepage> {
             .where('isFav', isEqualTo: true)
             .snapshots(),
         builder: (context, snapshot) {
-          // Debug output
-          if (snapshot.hasData) {
-            debugPrint('Fetched ${snapshot.data!.docs.length} favorite habits');
-            for (var doc in snapshot.data!.docs) {
-              debugPrint(
-                  'Favorite habit: ${doc['name']} (isFav: ${doc['isFav']})');
-            }
-          }
-
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(color: Colors.orange),

@@ -12,6 +12,7 @@ class Recordcard extends StatelessWidget {
     final name = habitData['name'] as String? ?? 'Unnamed Habit';
     final streak = habitData['streak'] as int? ?? 0;
     final lastPressed = habitData['lastpressed'] as String? ?? 'Never';
+    final category = habitData['category'] as String? ?? 'Sports';
 
     return Card(
       elevation: 2,
@@ -68,6 +69,21 @@ class Recordcard extends StatelessWidget {
                 const SizedBox(width: 3),
                 Text(
                   isFav ? "Favorite" : "Not Favorite",
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(
+                  Icons.category,
+                  color: Colors.orange,
+                  size: 30,
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  "Category: $category",
                   style: const TextStyle(fontSize: 18),
                 ),
               ],

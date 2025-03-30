@@ -18,7 +18,8 @@ dependencies:
   firebase_storage: ^12.4.4
   firebase_messaging: ^15.2.4
   firebase_auth: ^5.5.1
-  font_awesome_flutter: ^10.7.0    
+  font_awesome_flutter: ^10.7.0
+  syncfusion_flutter_charts: ^20.4.48  
 
 dev_dependencies:
   flutter_test:

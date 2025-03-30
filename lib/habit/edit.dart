@@ -1,28 +1,42 @@
 import 'package:daily_nest/Alert.dart';
 import 'package:daily_nest/authentications/MyTextField.dart';
+import 'package:daily_nest/habit/categortDropDown.dart';
 import 'package:daily_nest/habit/collection.dart';
 import 'package:daily_nest/homepage.dart';
 import 'package:flutter/material.dart';
 
 class EditHabit extends StatefulWidget {
   final String oldName;
+  final String oldCategory;
   final docId;
-  EditHabit({super.key, required this.oldName, this.docId});
+  EditHabit(
+      {super.key,
+      required this.oldName,
+      this.docId,
+      required this.oldCategory});
 
   @override
   State<EditHabit> createState() => _EditHabitState();
 }
 
 class _EditHabitState extends State<EditHabit> {
+  String selectedValue = '';
   @override
   void initState() {
     super.initState();
     name.text = widget.oldName;
+    selectedValue = widget.oldCategory;
   }
 
   TextEditingController name = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    updateParent(String newValue) {
+      setState(() {
+        selectedValue = newValue;
+      });
+    }
+
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
@@ -89,6 +103,28 @@ class _EditHabitState extends State<EditHabit> {
                     message: "Enter the name of the habit"),
               ),
               SizedBox(
+                height: 20,
+              ),
+              SizedBox(
+                width: size.width * 0.8,
+                child: Text(
+                  "Category",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              SizedBox(
+                width: size.width * 0.8,
+                child: Categortdropdown(
+                    startingCategory: widget.oldCategory,
+                    updateParent: (newValue) => updateParent(newValue!)),
+              ),
+              SizedBox(
                 height: 30,
               ),
               SizedBox(
@@ -102,14 +138,9 @@ class _EditHabitState extends State<EditHabit> {
                           builder: (context) =>
                               Alert(Message: "Enter the name of the habit"),
                         );
-                      } else if (name.text.trim() == widget.oldName.trim()) {
-                        showDialog(
-                          context: context,
-                          builder: (context) =>
-                              Alert(Message: "The name is unchanged"),
-                        );
                       } else {
-                        Collections.updateHabit(widget.docId, name.text);
+                        Collections.updateHabit(
+                            widget.docId, name.text, selectedValue);
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(

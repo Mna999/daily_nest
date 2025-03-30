@@ -30,6 +30,14 @@ class _HabitCardState extends State<HabitCard> {
           .doc(widget.habitId)
           .snapshots(),
       builder: (context, snapshot) {
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text('Habit not found'),
+            ),
+          );
+        }
         if (snapshot.hasData) {
           _isFav = snapshot.data!['isFav'] ?? false;
           _streak = snapshot.data!['streak'] ?? 0;
@@ -50,7 +58,7 @@ class _HabitCardState extends State<HabitCard> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     SizedBox(
-                      width: size.width * 0.2,
+                      width: size.width * 0.25,
                       height: size.height * 0.06,
                       child: Text(
                         _name,
@@ -196,7 +204,7 @@ class _HabitCardState extends State<HabitCard> {
       await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => EditHabit(
+          builder: (context) => EditHabit(oldCategory: doc['category'],
             docId: widget.habitId,
             oldName: doc['name'],
           ),

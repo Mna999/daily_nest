@@ -20,7 +20,7 @@ class Collections {
     return [];
   }
 
-  static Future<void> addHabit(String name) async {
+  static Future<void> addHabit(String name, String category) async {
     final user = _auth.currentUser;
     if (user != null) {
       await habits.add({
@@ -28,13 +28,15 @@ class Collections {
         "streak": 0,
         "isFav": false,
         "lastpressed": DateFormat('dd-MM-yyyy').format(DateTime.now()),
+        "category": category,
         "uid": user.uid,
       });
     }
   }
 
-  static Future<void> updateHabit(String docId, String newName) async {
-    await habits.doc(docId).update({"name": newName});
+  static Future<void> updateHabit(
+      String docId, String newName, String newCategory) async {
+    await habits.doc(docId).update({"name": newName, "category": newCategory});
   }
 
   static Future<void> updateHabitStreak(String docId, int newStreak) async {

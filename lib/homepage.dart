@@ -44,7 +44,6 @@ class _HomepageState extends State<Homepage> {
     _authSubscription?.cancel();
     _pageController.dispose();
 
-    _pageController.dispose();
     super.dispose();
   }
 
@@ -172,14 +171,14 @@ class _HomepageState extends State<Homepage> {
         backgroundColor: Colors.black,
       ),
       body: PageView(
-          controller: _pageController,
-          children: [_buildHomeContent(), Favoritepage(), Statespage()],
-          onPageChanged: (value) {
-            setState(() {
-              _currentIndex = value;
-            });
-          },
-          physics: ClampingScrollPhysics()),
+        controller: _pageController,
+        children: [_buildHomeContent(), Favoritepage(), Statespage()],
+        onPageChanged: (value) {
+          setState(() {
+            _currentIndex = value;
+          });
+        },
+      ),
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton(
               shape: const CircleBorder(),
