@@ -183,7 +183,7 @@ class _StatespageState extends State<Statespage> {
       series: <ChartSeries>[
         BarSeries<ChartData, String>(
           dataSource: [
-            ChartData('Sports', sportsStreak, Colors.blue!),
+            ChartData('Sports', sportsStreak, Colors.blue),
             ChartData('Work', workStreak, Colors.green),
             ChartData('Study', studyStreak, Colors.purple),
             ChartData('Life', lifeStreak, Colors.orange),
