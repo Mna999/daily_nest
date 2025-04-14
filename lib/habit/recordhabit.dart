@@ -81,19 +81,18 @@ class Recordhabit extends StatelessWidget {
 
                         if (snapshot.data!['lastpressed'] ==
                             formatter.format(DateTime.now())) {
-                          showDialog(
-                              context: context,
-                              builder: (context) => Alert(
-                                  Message:
-                                      "Habit has already been nested for the day"));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                                "Habit has already been nested for the day"),
+                            backgroundColor: Colors.orange,
+                          ));
                         } else {
                           Collections.updateHabitStreak(
                               snapshot.data!.id, snapshot.data!['streak'] + 1);
-                          showDialog(
-                              context: context,
-                              builder: (context) => Alert(
-                                  Message:
-                                      "Habit has been nested for the day successfully"));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text("Habit nested successfully"),
+                            backgroundColor: Colors.orange,
+                          ));
                         }
                       },
                       child: Text("Nest Habit"),

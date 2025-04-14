@@ -132,19 +132,21 @@ class _SignupState extends State<Signup> {
                               if (email.text.trim().isEmpty ||
                                   password.text.trim().isEmpty ||
                                   confirmPassword.text.trim().isEmpty) {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) => Alert(
-                                        Message:
-                                            "Please enter both email and password"));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content:
+                                      Text("Enter both email and password"),
+                                  backgroundColor: Colors.orange,
+                                ));
                                 return;
                               } else if (password.text.trim() !=
                                   confirmPassword.text.trim()) {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) => Alert(
-                                        Message:
-                                            "Both password must be the same"));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content:
+                                      Text("Both passwords must be the same"),
+                                  backgroundColor: Colors.orange,
+                                ));
                                 return;
                               }
 
@@ -189,11 +191,14 @@ class _SignupState extends State<Signup> {
                                 if (mounted) {
                                   setState(() => isLoading = false);
 
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) => Alert(
-                                          Message:
-                                              "An unexpected error occurred. Please try again."));
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: Text(
+                                      e.toString(),
+                                    ),
+                                    backgroundColor: Colors.orange,
+                                  ));
+                                  ;
                                 }
                               }
                             },

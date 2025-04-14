@@ -92,10 +92,10 @@ class _LoginState extends State<Login> {
                       InkWell(
                         onTap: () {
                           if (email.text.trim().isEmpty) {
-                            showDialog(
-                                context: context,
-                                builder: (context) =>
-                                    Alert(Message: "Please enter your email."));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("Enter your email"),
+                              backgroundColor: Colors.orange,
+                            ));
                           } else {
                             auth.sendPasswordResetEmail(email.text.trim());
                             showDialog(
@@ -124,11 +124,12 @@ class _LoginState extends State<Login> {
                             onPressed: () async {
                               if (email.text.trim().isEmpty ||
                                   password.text.trim().isEmpty) {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) => Alert(
-                                        Message:
-                                            "Please enter both email and password"));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content:
+                                      Text("Enter both email and password"),
+                                  backgroundColor: Colors.orange,
+                                ));
                                 return;
                               }
 
@@ -159,16 +160,19 @@ class _LoginState extends State<Login> {
                                   }
                                 }
                               } on FirebaseAuthException catch (e) {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) => Alert(
-                                        Message: auth.handleAuthException(e)));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text(auth.handleAuthException(e)),
+                                  backgroundColor: Colors.orange,
+                                ));
                               } catch (e) {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) => Alert(
-                                        Message:
-                                            "An error occurred. Please try again."));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text(
+                                    e.toString(),
+                                  ),
+                                  backgroundColor: Colors.orange,
+                                ));
                               } finally {
                                 if (mounted) {
                                   setState(() => isLoading = false);
